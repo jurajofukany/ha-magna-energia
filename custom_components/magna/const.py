@@ -10,14 +10,13 @@ EP_LOGIN = "/ajax/login.php"
 EP_LOAD = "/ajax/load.php"
 
 # Magna's iPortal (dodavatel/supplier) is a billing portal, not a telemetry feed - it only
-# ever shows daily/monthly totals, never anything real-time. On top of that, the underlying
-# interval data has a settlement lag: as of "today" the newest day with real (non-zero) values
-# is consistently 2 days back (verified empirically - "yesterday" is still all zeros, the day
-# before that already has real kWh). Polling more often than that would just re-read the same
-# numbers, so every 4 hours is plenty to notice new data during the day without hammering the
-# portal's login endpoint (we log in fresh on every refresh - see coordinator.py).
-DEFAULT_SCAN_INTERVAL = timedelta(hours=4)
-DAY_LAG_DAYS = 2
+# ever shows daily/monthly totals, never anything real-time, and the underlying interval data
+# is settled roughly once a day (a given day first appears several days late - see the
+# "Posledný zúčtovaný deň" logic in coordinator.py). There's nothing to gain from polling more
+# than a couple of times a day: every refresh logs in fresh and re-reads whole months, so
+# twice a day catches newly settled data well within a day while keeping the load on the
+# portal's login endpoint minimal.
+DEFAULT_SCAN_INTERVAL = timedelta(hours=12)
 
 # ajax/load.php request parameters (reverse-engineered from js/scripts.min.js + live traffic).
 INTERVAL_DAY = 1

@@ -1,7 +1,7 @@
 """Push Magna Energia's per-day totals into Home Assistant long-term statistics.
 
-iPortal only exposes settled totals, and a given day's real values land several days late
-(see ``const.DAY_LAG_DAYS``), so a live "today" sensor is always ~0. The month view, however,
+iPortal only exposes settled totals, and a given day's real values land several days late,
+so a live "today" sensor is always ~0. The month view, however,
 already returns a per-day, per-band breakdown in its ``data_sets``. We turn that into one
 external statistic per delivery point and 4T band (plus a total) and import it with each
 day's real timestamp.

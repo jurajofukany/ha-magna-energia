@@ -243,5 +243,5 @@ views:
 
               Grafy **po dňoch/mesiacoch** čerpajú z dlhodobých štatistík
               `magna:*`, ktoré integrácia napĺňa celým mesiacom po dňoch a pri
-              každom cykle (raz za 4 h) spätne opravuje. Prvé plné dáta teda
+              každom cykle (2× denne) spätne opravuje. Prvé plné dáta teda
               uvidíš krátko po inštalácii, nie okamžite.
