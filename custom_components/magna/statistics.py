@@ -77,6 +77,29 @@ def parse_daily_bands(month_payload: dict) -> dict[str, dict[str, float]]:
     return per_day
 
 
+def combined_daily_bands(payloads: list[dict]) -> dict[str, dict[str, float]]:
+    """Merge several month payloads (e.g. this month + last month) into one per-day map."""
+    per_day: dict[str, dict[str, float]] = {}
+    for payload in payloads:
+        per_day.update(parse_daily_bands(payload))
+    return per_day
+
+
+def last_settled_iso(*per_days: dict[str, dict[str, float]]) -> str | None:
+    """Latest ISO date carrying any non-zero total across the given per-day maps.
+
+    The portal fills a day in days-to-weeks late, so this - not a fixed offset - is what
+    "the last day we actually have data for" means in practice.
+    """
+    candidates = [
+        iso
+        for per_day in per_days
+        for iso, slot in per_day.items()
+        if slot.get("total", 0.0) > 0
+    ]
+    return max(candidates) if candidates else None
+
+
 async def _baseline_sum(
     hass: HomeAssistant, statistic_id: str, before: datetime
 ) -> float:

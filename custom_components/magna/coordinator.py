@@ -34,10 +34,10 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    BAND_KEYS,
     BAND_LABELS_SK,
     CHART_TYPE_LINES,
     CHART_TYPE_STACKED,
-    DAY_LAG_DAYS,
     DEFAULT_SCAN_INTERVAL,
     DELIVERY_POINTS,
     DOMAIN,
@@ -45,13 +45,15 @@ from .const import (
     EP_LOGIN,
     GRANULARITY_15MIN,
     GRANULARITY_DAY,
-    GRANULARITY_HOUR,
-    INTERVAL_DAY,
     INTERVAL_MONTH,
     PORTAL_BASE_URL,
     TARIFF_TYPE_4T,
 )
-from .statistics import async_import_daily_statistics
+from .statistics import (
+    async_import_daily_statistics,
+    combined_daily_bands,
+    last_settled_iso,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -210,8 +212,12 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
         self._password = password
 
     async def _async_update_data(self) -> dict[str, dict]:
-        target_date = date.today() - timedelta(days=DAY_LAG_DAYS)
-        date_str = target_date.isoformat()
+        # We no longer read "today minus a fixed lag" - the portal settles a day days-to-weeks
+        # late, so instead we fetch the whole month and pick the most recent day that actually
+        # has data (see the "Posledný zúčtovaný deň" block below). date_str just anchors which
+        # calendar month the month view returns.
+        date_str = date.today().isoformat()
+        prev_month_date = (date.today().replace(day=1) - timedelta(days=1)).isoformat()
 
         async with aiohttp.ClientSession(
             headers=_STATIC_HEADERS, cookie_jar=aiohttp.CookieJar()
@@ -229,17 +235,10 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                 try:
                     metrics: dict[str, Any] = {}
 
-                    # The stacked (4T time-band) view is the source of the plain kWh totals
-                    # too, so it's fetched for every point - see the "band_sensors" comment
-                    # in const.py for which points also get a per-band sensor breakdown.
-                    day_payload = await async_load(
-                        session,
-                        point["eic_index"],
-                        INTERVAL_DAY,
-                        GRANULARITY_HOUR,
-                        CHART_TYPE_STACKED,
-                        date_str,
-                    )
+                    # The stacked (4T time-band) month view is the source of everything: the
+                    # plain "za mesiac" totals (from its text_sumar) and the per-day, per-band
+                    # kWh breakdown (from its data_sets - used both for "Posledný zúčtovaný
+                    # deň" below and for the long-term statistics import).
                     month_payload = await async_load(
                         session,
                         point["eic_index"],
@@ -248,10 +247,7 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                         CHART_TYPE_STACKED,
                         date_str,
                     )
-                    metrics["day"] = compute_band_metrics(day_payload, "deň")
                     metrics["month"] = compute_band_metrics(month_payload, "mesiac")
-                    # Keep the month body around for the long-term statistics import below -
-                    # its data_sets carry the per-day, per-band kWh breakdown.
                     month_payloads[point_key] = [month_payload]
 
                     if point["peak_power"]:
@@ -269,10 +265,9 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                 except MagnaConnectionError as err:
                     _LOGGER.warning("Nepodarilo sa načítať dáta pre %s: %s", point_key, err)
 
-            # Also pull the previous calendar month so late settlement across the month
-            # boundary still lands in statistics (a day can stay 0 for days - see
-            # DAY_LAG_DAYS - so "the 1st" is often still empty when we first see the month).
-            prev_month_date = (target_date.replace(day=1) - timedelta(days=1)).isoformat()
+            # Also pull the previous calendar month: late settlement across the month boundary
+            # still lands in statistics, and in the first days of a month it's where the most
+            # recent settled day actually is.
             for point_key in list(month_payloads):
                 try:
                     month_payloads[point_key].append(
@@ -287,6 +282,28 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                     )
                 except MagnaConnectionError as err:
                     _LOGGER.debug("Predošlý mesiac pre %s sa nenačítal: %s", point_key, err)
+
+            # "Posledný zúčtovaný deň": newest day with real data across spotreba+vyroba (the
+            # points that see traffic every real day). Each point then reports that day's
+            # figures - pozicovna legitimately stays 0 until invoicing.
+            daily = {
+                pk: combined_daily_bands(payloads)
+                for pk, payloads in month_payloads.items()
+            }
+            settled_iso = last_settled_iso(
+                daily.get("spotreba", {}), daily.get("vyroba", {})
+            )
+            for point_key, metrics in results.items():
+                slot = daily.get(point_key, {}).get(settled_iso or "", {})
+                metrics["day"] = {
+                    # kept as an ISO string so coordinator.data stays JSON-clean for
+                    # diagnostics; the DATE sensor parses it back to a date.
+                    "date_from": settled_iso,
+                    "date_to": settled_iso,
+                    "settled_date": settled_iso,
+                    "total_kwh": slot.get("total"),
+                    **{f"{band}_kwh": slot.get(band) for band in BAND_KEYS},
+                }
 
         if not results:
             raise UpdateFailed("Nepodarilo sa načítať žiadne dáta z portálu Magna Energia")

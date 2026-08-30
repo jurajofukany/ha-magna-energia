@@ -28,14 +28,20 @@ každom pravidelnom stiahnutí dát (raz za 4 hodiny).
 
 Pre každý z 3 odberných bodov (spotreba, prebytok výroby, požičovňa):
 
-- denná a mesačná spotreba/výroba spolu aj rozdelená do 4 pásiem (Noc,
-  Ráno/Večer, Dopoludnie, Popoludnie) – okrem požičovne, tá má len súčty
+- spotreba/výroba za **posledný zúčtovaný deň** a za **aktuálny mesiac**, spolu
+  aj rozdelená do 4 pásiem (Noc, Ráno/Večer, Dopoludnie, Popoludnie) – okrem
+  požičovne, tá má len súčty
+- „Posledný zúčtovaný deň" (dátum)
 - špičkový výkon a čas jeho výskytu (okrem požičovne)
-- odhadované náklady v EUR podľa portálu (len pre spotrebu)
+- odhadované náklady v EUR podľa portálu za mesiac (len pre spotrebu)
 
-Senzor „Spolu (deň)" je takmer vždy 0 – portál dopĺňa dáta spätne a konkrétny
-deň má reálne hodnoty až o niekoľko dní neskôr. Na históriu po dňoch slúžia
-dlhodobé štatistiky nižšie, nie tento senzor.
+Senzory „(posledný deň)" neukazujú dnešok, ale **posledný deň, ktorý už portál
+zúčtoval** – ten sa určí ako najnovší deň s reálnymi dátami naprieč spotrebou a
+výrobou (portál dopĺňa deň aj s niekoľkodňovým oneskorením). Dátum toho dňa je v
+senzore „Posledný zúčtovaný deň" a v atribúte `zúčtovaný_deň`. Požičovňa v ňom
+väčšinou ukazuje 0 – vrátená elektrina sa napočítava až pri fakturácii.
+
+Na súvislú históriu po dňoch slúžia dlhodobé štatistiky nižšie, nie tieto senzory.
 
 ## Dlhodobé štatistiky (celý mesiac po dňoch)
 

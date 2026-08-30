@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 import logging
 
 from homeassistant.components.sensor import (
@@ -22,7 +23,7 @@ from .coordinator import MagnaCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-_PERIOD_LABEL_SK = {"day": "deň", "month": "mesiac"}
+_PERIOD_LABEL_SK = {"day": "posledný deň", "month": "mesiac"}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -36,6 +37,11 @@ def _band_and_total_descriptions(point_config: dict) -> list[MagnaSensorDescript
     descriptions: list[MagnaSensorDescription] = []
 
     for period, period_label in _PERIOD_LABEL_SK.items():
+        # "mesiac" is a month-to-date running total -> TOTAL (feeds HA statistics). "posledný
+        # deň" is just a snapshot of one settled day that changes meaning daily, so it carries
+        # no state class - its real history lives in the magna:* external statistics instead.
+        state_class = SensorStateClass.TOTAL if period == "month" else None
+
         if point_config["band_sensors"]:
             for band_key in BAND_KEYS:
                 descriptions.append(
@@ -45,7 +51,7 @@ def _band_and_total_descriptions(point_config: dict) -> list[MagnaSensorDescript
                         name=f"{BAND_LABELS_SK[band_key]} ({period_label})",
                         metrics_path=(period, f"{band_key}_kwh"),
                         device_class=SensorDeviceClass.ENERGY,
-                        state_class=SensorStateClass.TOTAL,
+                        state_class=state_class,
                         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
                     )
                 )
@@ -57,12 +63,13 @@ def _band_and_total_descriptions(point_config: dict) -> list[MagnaSensorDescript
                 name=f"Spolu ({period_label})",
                 metrics_path=(period, "total_kwh"),
                 device_class=SensorDeviceClass.ENERGY,
-                state_class=SensorStateClass.TOTAL,
+                state_class=state_class,
                 native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
             )
         )
 
-        if point_config["cost"]:
+        # The month view has no per-day EUR, so "náklady" only makes sense for the month.
+        if point_config["cost"] and period == "month":
             descriptions.append(
                 MagnaSensorDescription(
                     key=f"{period}_cost",
@@ -74,6 +81,16 @@ def _band_and_total_descriptions(point_config: dict) -> list[MagnaSensorDescript
                     native_unit_of_measurement="EUR",
                 )
             )
+
+    descriptions.append(
+        MagnaSensorDescription(
+            key="day_settled_date",
+            translation_key="day_settled_date",
+            name="Posledný zúčtovaný deň",
+            metrics_path=("day", "settled_date"),
+            device_class=SensorDeviceClass.DATE,
+        )
+    )
 
     if point_config["peak_power"]:
         descriptions.append(
@@ -147,14 +164,21 @@ class MagnaSensor(CoordinatorEntity[MagnaCoordinator], SensorEntity):
     def native_value(self):
         period, metric_key = self.entity_description.metrics_path
         point_metrics = self.coordinator.data.get(self._point_key, {})
-        return point_metrics.get(period, {}).get(metric_key)
+        value = point_metrics.get(period, {}).get(metric_key)
+        if self.entity_description.device_class is SensorDeviceClass.DATE and isinstance(
+            value, str
+        ):
+            return date.fromisoformat(value)
+        return value
 
     @property
     def extra_state_attributes(self) -> dict:
         period, _ = self.entity_description.metrics_path
         point_metrics = self.coordinator.data.get(self._point_key, {})
         period_metrics = point_metrics.get(period, {})
-        if period in ("day", "month"):
+        if period == "day":
+            return {"zúčtovaný_deň": period_metrics.get("date_to")}
+        if period == "month":
             return {
                 "obdobie_od": period_metrics.get("date_from"),
                 "obdobie_do": period_metrics.get("date_to"),
