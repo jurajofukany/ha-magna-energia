@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Magna Energia iPortal - login",
+        "description": "Enter the same credentials you use at https://iportal.magna-energia.sk/ (the login is usually your customer number).",
+        "data": {
+          "username": "Login",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Magna Energia iPortal - reauthenticate",
+        "description": "The password for {username} no longer works. Enter a new one.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid login or password.",
+      "cannot_connect": "Could not connect to the Magna Energia portal."
+    },
+    "abort": {
+      "already_configured": "This account is already configured.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  }
+}

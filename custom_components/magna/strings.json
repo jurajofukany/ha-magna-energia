@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Magna Energia iPortal - prihlásenie",
+        "description": "Zadaj rovnaké prihlasovacie údaje ako na https://iportal.magna-energia.sk/ (login je zvyčajne číslo zákazníka).",
+        "data": {
+          "username": "Login",
+          "password": "Heslo"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Magna Energia iPortal - obnoviť prihlásenie",
+        "description": "Heslo pre {username} už nefunguje. Zadaj nové heslo.",
+        "data": {
+          "password": "Heslo"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Nesprávny login alebo heslo.",
+      "cannot_connect": "Nepodarilo sa spojiť s portálom Magna Energia."
+    },
+    "abort": {
+      "already_configured": "Toto konto je už nastavené.",
+      "reauth_successful": "Prihlásenie bolo úspešne obnovené."
+    }
+  }
+}
