@@ -42,7 +42,7 @@ views:
               - entity: sensor.magna_energia_spotreba_odber_zo_siete_posledny_zuctovany_den
                 name: Zúčtovaný deň
                 icon: mdi:calendar-check
-              - entity: sensor.magna_energia_spotreba_odber_zo_siete_spolu_posledny_den
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_spolu_den
                 name: Spolu (deň)
                 icon: mdi:sigma
               - entity: sensor.magna_energia_spotreba_odber_zo_siete_spolu_mesiac
@@ -62,16 +62,16 @@ views:
             title: Pásma tarify 4T – posledný zúčtovaný deň
             state_color: false
             entities:
-              - entity: sensor.magna_energia_spotreba_odber_zo_siete_noc_posledny_den
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_noc_den
                 name: Noc (22–06)
                 icon: mdi:weather-night
-              - entity: sensor.magna_energia_spotreba_odber_zo_siete_rano_vecer_posledny_den
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_rano_vecer_den
                 name: Ráno / Večer (06–09, 19–22)
                 icon: mdi:weather-sunset
-              - entity: sensor.magna_energia_spotreba_odber_zo_siete_dopoludnie_posledny_den
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_dopoludnie_den
                 name: Dopoludnie (09–13)
                 icon: mdi:weather-partly-cloudy
-              - entity: sensor.magna_energia_spotreba_odber_zo_siete_popoludnie_posledny_den
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_popoludnie_den
                 name: Popoludnie (13–19)
                 icon: mdi:weather-sunny
               - type: divider
@@ -108,7 +108,7 @@ views:
             chart_type: bar
             days_to_show: 30
             stat_types:
-              - sum
+              - change
             entities:
               - entity: magna:spotreba_noc
                 name: Noc
@@ -124,7 +124,7 @@ views:
             period: month
             chart_type: bar
             stat_types:
-              - sum
+              - change
             entities:
               - entity: magna:spotreba_total
                 name: Spolu
@@ -143,7 +143,7 @@ views:
               - entity: sensor.magna_energia_prebytok_vyroby_posledny_zuctovany_den
                 name: Zúčtovaný deň
                 icon: mdi:calendar-check
-              - entity: sensor.magna_energia_prebytok_vyroby_spolu_posledny_den
+              - entity: sensor.magna_energia_prebytok_vyroby_spolu_den
                 name: Spolu (deň)
                 icon: mdi:sigma
               - entity: sensor.magna_energia_prebytok_vyroby_spolu_mesiac
@@ -182,7 +182,7 @@ views:
             chart_type: bar
             days_to_show: 30
             stat_types:
-              - sum
+              - change
             entities:
               - entity: magna:vyroba_noc
                 name: Noc
@@ -198,7 +198,7 @@ views:
             period: month
             chart_type: bar
             stat_types:
-              - sum
+              - change
             entities:
               - entity: magna:vyroba_total
                 name: Spolu
@@ -226,7 +226,7 @@ views:
             period: month
             chart_type: bar
             stat_types:
-              - sum
+              - change
             entities:
               - entity: magna:pozicovna_total
                 name: Spolu
