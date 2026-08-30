@@ -1,0 +1,247 @@
+# Lovelace – Magna Energia iPortal
+#
+# Ako to pridať:
+#   Nastavenia → Dashboardy → (tvoj dashboard) → ⋮ vpravo hore → Raw configuration editor
+#   a vlož túto sekciu `views:` (alebo len jednu položku zoznamu `views` do svojho súboru).
+#
+# Entity ID sa v HA generujú z názvu zariadenia + názvu entity (has_entity_name).
+# Zariadenia, ktoré integrácia vytvorí, a ich prefixy:
+#   Magna Energia - Spotreba (odber zo siete)  -> sensor.magna_energia_spotreba_odber_zo_siete_*
+#   Magna Energia - Prebytok výroby            -> sensor.magna_energia_prebytok_vyroby_*
+#   Magna Energia - Požičovňa (vrátená ...)    -> sensor.magna_energia_pozicovna_vratena_elektrina_*
+# Ak si niektorú entitu premenoval, over si presné ID vo Vývojárske nástroje → Stavy
+# a uprav ho nižšie.
+#
+# Grafy „po dňoch/mesiacoch" používajú externé štatistiky `magna:*`, ktoré integrácia
+# napĺňa sama (celý mesiac po dňoch, spätne opravované). Nájdeš ich aj vo
+# Vývojárske nástroje → Štatistiky.
+#
+# Použité sú len natívne karty – žiadne HACS frontend závislosti.
+
+views:
+  - title: Magna Energia
+    path: magna-energia
+    icon: mdi:transmission-tower
+    type: sections
+    max_columns: 3
+    sections:
+
+      # ─────────────────────────────  ODBER ZO SIETE  ─────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Odber zo siete
+            heading_style: title
+            icon: mdi:transmission-tower-import
+
+          - type: glance
+            show_name: true
+            show_state: true
+            columns: 3
+            entities:
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_posledny_zuctovany_den
+                name: Zúčtovaný deň
+                icon: mdi:calendar-check
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_spolu_posledny_den
+                name: Spolu (deň)
+                icon: mdi:sigma
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_spolu_mesiac
+                name: Spolu (mesiac)
+                icon: mdi:calendar-month
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_podla_portalu_mesiac
+                name: Náklady (mesiac)
+                icon: mdi:currency-eur
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_maximalny_vykon_tento_mesiac
+                name: Max. výkon
+                icon: mdi:flash
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_cas_maximalneho_vykonu_tento_mesiac
+                name: Čas max.
+                icon: mdi:clock-alert-outline
+
+          - type: entities
+            title: Pásma tarify 4T – posledný zúčtovaný deň
+            state_color: false
+            entities:
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_noc_posledny_den
+                name: Noc (22–06)
+                icon: mdi:weather-night
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_rano_vecer_posledny_den
+                name: Ráno / Večer (06–09, 19–22)
+                icon: mdi:weather-sunset
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_dopoludnie_posledny_den
+                name: Dopoludnie (09–13)
+                icon: mdi:weather-partly-cloudy
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_popoludnie_posledny_den
+                name: Popoludnie (13–19)
+                icon: mdi:weather-sunny
+              - type: divider
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_posledny_zuctovany_den
+                name: Dátum tohto dňa
+                icon: mdi:calendar-check
+
+          - type: entities
+            title: Pásma tarify 4T – tento mesiac
+            entities:
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_noc_mesiac
+                name: Noc
+                icon: mdi:weather-night
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_rano_vecer_mesiac
+                name: Ráno / Večer
+                icon: mdi:weather-sunset
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_dopoludnie_mesiac
+                name: Dopoludnie
+                icon: mdi:weather-partly-cloudy
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_popoludnie_mesiac
+                name: Popoludnie
+                icon: mdi:weather-sunny
+              - type: divider
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_spolu_mesiac
+                name: Spolu
+                icon: mdi:sigma
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_podla_portalu_mesiac
+                name: Náklady podľa portálu
+                icon: mdi:currency-eur
+
+          - type: statistics-graph
+            title: Spotreba po dňoch (pásma 4T)
+            period: day
+            chart_type: bar
+            days_to_show: 30
+            stat_types:
+              - sum
+            entities:
+              - entity: magna:spotreba_noc
+                name: Noc
+              - entity: magna:spotreba_rano_vecer
+                name: Ráno / Večer
+              - entity: magna:spotreba_dopoludnie
+                name: Dopoludnie
+              - entity: magna:spotreba_popoludnie
+                name: Popoludnie
+
+          - type: statistics-graph
+            title: Spotreba po mesiacoch
+            period: month
+            chart_type: bar
+            stat_types:
+              - sum
+            entities:
+              - entity: magna:spotreba_total
+                name: Spolu
+
+      # ─────────────────────────────  PREBYTOK VÝROBY  ────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Prebytok výroby
+            heading_style: title
+            icon: mdi:solar-power-variant
+
+          - type: glance
+            columns: 3
+            entities:
+              - entity: sensor.magna_energia_prebytok_vyroby_posledny_zuctovany_den
+                name: Zúčtovaný deň
+                icon: mdi:calendar-check
+              - entity: sensor.magna_energia_prebytok_vyroby_spolu_posledny_den
+                name: Spolu (deň)
+                icon: mdi:sigma
+              - entity: sensor.magna_energia_prebytok_vyroby_spolu_mesiac
+                name: Spolu (mesiac)
+                icon: mdi:calendar-month
+              - entity: sensor.magna_energia_prebytok_vyroby_maximalny_vykon_tento_mesiac
+                name: Max. výkon
+                icon: mdi:flash
+              - entity: sensor.magna_energia_prebytok_vyroby_cas_maximalneho_vykonu_tento_mesiac
+                name: Čas max.
+                icon: mdi:clock-alert-outline
+
+          - type: entities
+            title: Pásma tarify 4T – tento mesiac
+            entities:
+              - entity: sensor.magna_energia_prebytok_vyroby_noc_mesiac
+                name: Noc
+                icon: mdi:weather-night
+              - entity: sensor.magna_energia_prebytok_vyroby_rano_vecer_mesiac
+                name: Ráno / Večer
+                icon: mdi:weather-sunset
+              - entity: sensor.magna_energia_prebytok_vyroby_dopoludnie_mesiac
+                name: Dopoludnie
+                icon: mdi:weather-partly-cloudy
+              - entity: sensor.magna_energia_prebytok_vyroby_popoludnie_mesiac
+                name: Popoludnie
+                icon: mdi:weather-sunny
+              - type: divider
+              - entity: sensor.magna_energia_prebytok_vyroby_spolu_mesiac
+                name: Spolu
+                icon: mdi:sigma
+
+          - type: statistics-graph
+            title: Prebytok po dňoch (pásma 4T)
+            period: day
+            chart_type: bar
+            days_to_show: 30
+            stat_types:
+              - sum
+            entities:
+              - entity: magna:vyroba_noc
+                name: Noc
+              - entity: magna:vyroba_rano_vecer
+                name: Ráno / Večer
+              - entity: magna:vyroba_dopoludnie
+                name: Dopoludnie
+              - entity: magna:vyroba_popoludnie
+                name: Popoludnie
+
+          - type: statistics-graph
+            title: Prebytok po mesiacoch
+            period: month
+            chart_type: bar
+            stat_types:
+              - sum
+            entities:
+              - entity: magna:vyroba_total
+                name: Spolu
+
+      # ──────────────────  POŽIČOVŇA + INFO O DÁTACH  ────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Požičovňa (vrátená elektrina)
+            heading_style: title
+            icon: mdi:battery-share-outline
+
+          - type: glance
+            columns: 2
+            entities:
+              - entity: sensor.magna_energia_pozicovna_vratena_elektrina_posledny_zuctovany_den
+                name: Zúčtovaný deň
+                icon: mdi:calendar-check
+              - entity: sensor.magna_energia_pozicovna_vratena_elektrina_spolu_mesiac
+                name: Spolu (mesiac)
+                icon: mdi:calendar-month
+
+          - type: statistics-graph
+            title: Požičovňa po mesiacoch
+            period: month
+            chart_type: bar
+            stat_types:
+              - sum
+            entities:
+              - entity: magna:pozicovna_total
+                name: Spolu
+
+          - type: markdown
+            content: >
+              **O dátach:** iPortal je fakturačný portál, nie telemetria – dáva len
+              denné/mesačné súčty a konkrétny deň doúčtuje s niekoľkodňovým
+              oneskorením. Senzory **„(posledný deň)"** preto ukazujú posledný
+              deň, ktorý portál už zúčtoval (dátum je v „Zúčtovaný deň"), nie
+              dnešok. Požičovňa tam väčšinou ukazuje 0 – vrátená elektrina sa
+              napočíta až pri fakturácii.
+
+
+              Grafy **po dňoch/mesiacoch** čerpajú z dlhodobých štatistík
+              `magna:*`, ktoré integrácia napĺňa celým mesiacom po dňoch a pri
+              každom cykle (raz za 4 h) spätne opravuje. Prvé plné dáta teda
+              uvidíš krátko po inštalácii, nie okamžite.

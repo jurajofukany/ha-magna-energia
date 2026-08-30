@@ -62,6 +62,15 @@ Nájdeš ich v **Nastavenia → Vývojárske nástroje → Štatistiky**, v kart
 štyroch pásiem, takže oproti mesačnému číslu na portáli môže mať drobnú
 zaokrúhľovaciu odchýlku (rádovo stotiny kWh za mesiac).
 
+## Lovelace
+
+Hotový dashboard je v [`lovelace_magna_energia.yaml`](lovelace_magna_energia.yaml) –
+tri sekcie (odber / výroba / požičovňa), prehľad za posledný zúčtovaný deň aj
+mesiac, pásma 4T a grafy po dňoch/mesiacoch z `magna:*` štatistík. Len natívne
+karty. Vlož obsah `views:` cez **Nastavenia → Dashboardy → ⋮ → Raw configuration
+editor** a podľa potreby uprav `entity_id` (over si ich vo Vývojárske nástroje →
+Stavy).
+
 ## Bezpečnosť
 
 Prihlasovacie údaje sa zadávajú výlučne cez formulár config flow v HA UI a HA
