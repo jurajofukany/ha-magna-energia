@@ -135,7 +135,7 @@ class MagnaSensor(CoordinatorEntity[MagnaCoordinator], SensorEntity):
             identifiers={(DOMAIN, f"{entry.entry_id}_{point_key}")},
             name=f"Magna Energia - {point_config['label']}",
             manufacturer="Magna Energia",
-            model=point_config.get("eic"),
+            model=point_config["label"],
             configuration_url=PORTAL_BASE_URL,
         )
 

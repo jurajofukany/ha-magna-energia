@@ -249,6 +249,16 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                     metrics["day"] = compute_band_metrics(day_payload, "deň")
                     metrics["month"] = compute_band_metrics(month_payload, "mesiac")
 
+                    # TEMPORARY (reverse-engineering aid): keep the raw ajax/load.php bodies so
+                    # they land in the downloadable config-entry diagnostics. We only parse
+                    # 'text_sumar' so far; the month/day 'data_sets' hold the per-day / per-hour
+                    # per-band breakdown we want to import into HA long-term statistics. Remove
+                    # this block once compute_* knows how to read data_sets directly.
+                    metrics["_debug_raw"] = {
+                        "day_payload": day_payload,
+                        "month_payload": month_payload,
+                    }
+
                     if point["peak_power"]:
                         peak_payload = await async_load(
                             session,

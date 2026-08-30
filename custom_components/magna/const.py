@@ -58,9 +58,12 @@ BAND_LABELS_SK = {
     "noc": "Noc",
 }
 
-# The 3 "miesta" (delivery points / EICs) available on this account's "spotreba" page,
-# identified by their dropdown index (data-value of .custom_select.miesto .option - this
-# index, NOT the EIC string, is what the "eic" POST parameter to ajax/load.php actually wants).
+# The 3 "miesta" (delivery points) available on this account's "spotreba" page, identified by
+# their dropdown index (data-value of .custom_select.miesto .option) - this index, NOT the EIC
+# string shown in the UI, is what the "eic" POST parameter to ajax/load.php actually wants, so
+# the account's real EIC codes are never needed here and aren't stored (they're personal
+# metering-point identifiers). The eic_index values below are specific to the account this was
+# built against; another account may order its delivery points differently.
 #
 # The day/month "stacked" (4T time-band) view is fetched for ALL THREE points - that's where
 # even the plain totals come from - but not every point gets the full set of sensors:
@@ -78,7 +81,6 @@ BAND_LABELS_SK = {
 DELIVERY_POINTS: dict[str, dict] = {
     "spotreba": {
         "eic_index": 0,
-        "eic": "24ZZS5245061000Q",
         "label": "Spotreba (odber zo siete)",
         "band_sensors": True,
         "cost": True,
@@ -86,7 +88,6 @@ DELIVERY_POINTS: dict[str, dict] = {
     },
     "vyroba": {
         "eic_index": 2,
-        "eic": "24ZZSVYR00347858",
         "label": "Prebytok výroby",
         "band_sensors": True,
         "cost": False,
@@ -94,7 +95,6 @@ DELIVERY_POINTS: dict[str, dict] = {
     },
     "pozicovna": {
         "eic_index": 1,
-        "eic": "POZZSVYR00347858",
         "label": "Požičovňa (vrátená elektrina)",
         "band_sensors": False,
         "cost": False,
