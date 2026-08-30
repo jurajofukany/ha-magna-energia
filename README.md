@@ -33,6 +33,29 @@ Pre každý z 3 odberných bodov (spotreba, prebytok výroby, požičovňa):
 - špičkový výkon a čas jeho výskytu (okrem požičovne)
 - odhadované náklady v EUR podľa portálu (len pre spotrebu)
 
+Senzor „Spolu (deň)" je takmer vždy 0 – portál dopĺňa dáta spätne a konkrétny
+deň má reálne hodnoty až o niekoľko dní neskôr. Na históriu po dňoch slúžia
+dlhodobé štatistiky nižšie, nie tento senzor.
+
+## Dlhodobé štatistiky (celý mesiac po dňoch)
+
+Pri každom stiahnutí dát integrácia navyše naimportuje **celý aktuálny aj
+predošlý mesiac po dňoch** do dlhodobých štatistík Home Assistantu, každý deň so
+svojím skutočným dátumom. Keďže sa mesiac reimportuje pri každom cykle, spätne
+doúčtované dni sa automaticky opravia.
+
+Štatistiky (jednotka kWh, typ „súčet"):
+
+- `magna:spotreba_total`, `magna:spotreba_noc`, `magna:spotreba_rano_vecer`,
+  `magna:spotreba_dopoludnie`, `magna:spotreba_popoludnie`
+- to isté pre `magna:vyroba_*`
+- `magna:pozicovna_total`
+
+Nájdeš ich v **Nastavenia → Vývojárske nástroje → Štatistiky**, v karte
+*Statistics graph* a dajú sa pridať do panela **Energie**. `*_total` je súčet
+štyroch pásiem, takže oproti mesačnému číslu na portáli môže mať drobnú
+zaokrúhľovaciu odchýlku (rádovo stotiny kWh za mesiac).
+
 ## Bezpečnosť
 
 Prihlasovacie údaje sa zadávajú výlučne cez formulár config flow v HA UI a HA

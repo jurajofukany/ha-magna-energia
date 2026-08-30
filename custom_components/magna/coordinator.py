@@ -51,6 +51,7 @@ from .const import (
     PORTAL_BASE_URL,
     TARIFF_TYPE_4T,
 )
+from .statistics import async_import_daily_statistics
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -223,6 +224,7 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                 raise UpdateFailed(str(err)) from err
 
             results: dict[str, dict] = {}
+            month_payloads: dict[str, list[dict]] = {}
             for point_key, point in DELIVERY_POINTS.items():
                 try:
                     metrics: dict[str, Any] = {}
@@ -248,16 +250,9 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                     )
                     metrics["day"] = compute_band_metrics(day_payload, "deň")
                     metrics["month"] = compute_band_metrics(month_payload, "mesiac")
-
-                    # TEMPORARY (reverse-engineering aid): keep the raw ajax/load.php bodies so
-                    # they land in the downloadable config-entry diagnostics. We only parse
-                    # 'text_sumar' so far; the month/day 'data_sets' hold the per-day / per-hour
-                    # per-band breakdown we want to import into HA long-term statistics. Remove
-                    # this block once compute_* knows how to read data_sets directly.
-                    metrics["_debug_raw"] = {
-                        "day_payload": day_payload,
-                        "month_payload": month_payload,
-                    }
+                    # Keep the month body around for the long-term statistics import below -
+                    # its data_sets carry the per-day, per-band kWh breakdown.
+                    month_payloads[point_key] = [month_payload]
 
                     if point["peak_power"]:
                         peak_payload = await async_load(
@@ -274,7 +269,33 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
                 except MagnaConnectionError as err:
                     _LOGGER.warning("Nepodarilo sa načítať dáta pre %s: %s", point_key, err)
 
+            # Also pull the previous calendar month so late settlement across the month
+            # boundary still lands in statistics (a day can stay 0 for days - see
+            # DAY_LAG_DAYS - so "the 1st" is often still empty when we first see the month).
+            prev_month_date = (target_date.replace(day=1) - timedelta(days=1)).isoformat()
+            for point_key in list(month_payloads):
+                try:
+                    month_payloads[point_key].append(
+                        await async_load(
+                            session,
+                            DELIVERY_POINTS[point_key]["eic_index"],
+                            INTERVAL_MONTH,
+                            GRANULARITY_DAY,
+                            CHART_TYPE_STACKED,
+                            prev_month_date,
+                        )
+                    )
+                except MagnaConnectionError as err:
+                    _LOGGER.debug("Predošlý mesiac pre %s sa nenačítal: %s", point_key, err)
+
         if not results:
             raise UpdateFailed("Nepodarilo sa načítať žiadne dáta z portálu Magna Energia")
+
+        # Best-effort: a statistics failure must never fail the coordinator refresh, the
+        # live sensors are the primary product.
+        try:
+            await async_import_daily_statistics(self.hass, month_payloads)
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception("Import dlhodobých štatistík Magna zlyhal")
 
         return results

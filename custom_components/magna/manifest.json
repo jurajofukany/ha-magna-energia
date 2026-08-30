@@ -1,11 +1,12 @@
 {
   "domain": "magna",
   "name": "Magna Energia iPortal",
+  "after_dependencies": ["recorder"],
   "codeowners": ["@jurajofukany"],
   "config_flow": true,
   "documentation": "https://github.com/jurajofukany/ha-magna-energia",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/jurajofukany/ha-magna-energia/issues",
   "requirements": [],
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
