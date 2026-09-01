@@ -201,12 +201,18 @@ def compute_peak_power_metrics(payload: dict) -> dict[str, Any]:
 class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
     """Logs in and fetches day/month (and, where applicable, peak-power) metrics per point."""
 
-    def __init__(self, hass: HomeAssistant, username: str, password: str) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        username: str,
+        password: str,
+        update_interval: timedelta = DEFAULT_SCAN_INTERVAL,
+    ) -> None:
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=DEFAULT_SCAN_INTERVAL,
+            update_interval=update_interval,
         )
         self._username = username
         self._password = password

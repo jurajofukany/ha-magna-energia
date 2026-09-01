@@ -15,8 +15,13 @@ EP_LOAD = "/ajax/load.php"
 # "Posledný zúčtovaný deň" logic in coordinator.py). There's nothing to gain from polling more
 # than a couple of times a day: every refresh logs in fresh and re-reads whole months, so
 # twice a day catches newly settled data well within a day while keeping the load on the
-# portal's login endpoint minimal.
-DEFAULT_SCAN_INTERVAL = timedelta(hours=12)
+# portal's login endpoint minimal. The user can override this in the integration's options
+# (config_flow.MagnaOptionsFlow) - CONF_SCAN_INTERVAL holds a whole number of hours.
+DEFAULT_SCAN_INTERVAL_HOURS = 12
+DEFAULT_SCAN_INTERVAL = timedelta(hours=DEFAULT_SCAN_INTERVAL_HOURS)
+
+CONF_SCAN_INTERVAL = "scan_interval"
+SCAN_INTERVAL_HOURS_OPTIONS = (4, 6, 8, 12, 24)
 
 # ajax/load.php request parameters (reverse-engineered from js/scripts.min.js + live traffic).
 INTERVAL_DAY = 1

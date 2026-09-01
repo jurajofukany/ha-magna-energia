@@ -7,7 +7,9 @@ vystaví dennú/mesačnú spotrebu a prebytky výroby (rozdelené do 4 pásiem t
 
 Portál nemá captchu, takže sa prihlasuje priamo cez `aiohttp` – žiadny
 prehliadač, žiadna externe zachytávaná session. Prihlásenie beží nanovo pri
-každom pravidelnom stiahnutí dát (dvakrát denne).
+každom pravidelnom stiahnutí dát (predvolene dvakrát denne; interval sa dá
+zmeniť v **Nastavenia → Zariadenia a služby → Magna Energia iPortal →
+Konfigurovať**).
 
 ## Inštalácia
 

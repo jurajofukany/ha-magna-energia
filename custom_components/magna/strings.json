@@ -25,5 +25,16 @@
       "already_configured": "Toto konto je už nastavené.",
       "reauth_successful": "Prihlásenie bolo úspešne obnovené."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Magna Energia iPortal - nastavenia",
+        "description": "Portál dopĺňa dáta raz denne, takže častejšie sťahovanie len znovu číta tie isté čísla.",
+        "data": {
+          "scan_interval": "Interval sťahovania (hodiny)"
+        }
+      }
+    }
   }
 }

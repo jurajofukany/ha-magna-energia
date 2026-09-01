@@ -25,5 +25,16 @@
       "already_configured": "This account is already configured.",
       "reauth_successful": "Re-authentication was successful."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Magna Energia iPortal - options",
+        "description": "The portal settles its data once a day, so polling more often just re-reads the same numbers.",
+        "data": {
+          "scan_interval": "Polling interval (hours)"
+        }
+      }
+    }
   }
 }
