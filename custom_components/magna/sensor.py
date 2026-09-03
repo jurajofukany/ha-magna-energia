@@ -81,6 +81,75 @@ def _band_and_total_descriptions(point_config: dict) -> list[MagnaSensorDescript
                     native_unit_of_measurement="EUR",
                 )
             )
+            # iPortal účtuje len silovú elektrinu; distribúcia je dopočet (plochá sadzba za
+            # kWh, viď DISTRIBUTION_PRICE_EUR_KWH). "Náklady spolu" = portál + distribúcia.
+            descriptions.append(
+                MagnaSensorDescription(
+                    key=f"{period}_distribution_cost",
+                    translation_key=f"{period}_distribution_cost",
+                    name=f"Distribúcia ({period_label})",
+                    metrics_path=(period, "distribution_eur"),
+                    device_class=SensorDeviceClass.MONETARY,
+                    state_class=SensorStateClass.TOTAL,
+                    native_unit_of_measurement="EUR",
+                )
+            )
+            descriptions.append(
+                MagnaSensorDescription(
+                    key=f"{period}_total_cost",
+                    translation_key=f"{period}_total_cost",
+                    name=f"Náklady spolu s distribúciou ({period_label})",
+                    metrics_path=(period, "total_with_distribution_eur"),
+                    device_class=SensorDeviceClass.MONETARY,
+                    state_class=SensorStateClass.TOTAL,
+                    native_unit_of_measurement="EUR",
+                )
+            )
+
+    # Predošlý (uzavretý) kalendárny mesiac. Bez state class - je to snímka, ktorá pri prelome
+    # mesiaca zmení význam (rovnaký dôvod ako pri "posledný deň"); dlhodobú históriu drží
+    # magna:* externá štatistika. Portál pre minulý mesiac vracia aj svoje EUR náklady.
+    descriptions.append(
+        MagnaSensorDescription(
+            key="prev_month_total",
+            translation_key="prev_month_total",
+            name="Spolu (minulý mesiac)",
+            metrics_path=("prev_month", "total_kwh"),
+            device_class=SensorDeviceClass.ENERGY,
+            native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        )
+    )
+    if point_config["cost"]:
+        descriptions.append(
+            MagnaSensorDescription(
+                key="prev_month_cost",
+                translation_key="prev_month_cost",
+                name="Náklady podľa portálu (minulý mesiac)",
+                metrics_path=("prev_month", "total_eur"),
+                device_class=SensorDeviceClass.MONETARY,
+                native_unit_of_measurement="EUR",
+            )
+        )
+        descriptions.append(
+            MagnaSensorDescription(
+                key="prev_month_distribution_cost",
+                translation_key="prev_month_distribution_cost",
+                name="Distribúcia (minulý mesiac)",
+                metrics_path=("prev_month", "distribution_eur"),
+                device_class=SensorDeviceClass.MONETARY,
+                native_unit_of_measurement="EUR",
+            )
+        )
+        descriptions.append(
+            MagnaSensorDescription(
+                key="prev_month_total_cost",
+                translation_key="prev_month_total_cost",
+                name="Náklady spolu s distribúciou (minulý mesiac)",
+                metrics_path=("prev_month", "total_with_distribution_eur"),
+                device_class=SensorDeviceClass.MONETARY,
+                native_unit_of_measurement="EUR",
+            )
+        )
 
     descriptions.append(
         MagnaSensorDescription(
@@ -178,7 +247,7 @@ class MagnaSensor(CoordinatorEntity[MagnaCoordinator], SensorEntity):
         period_metrics = point_metrics.get(period, {})
         if period == "day":
             return {"zúčtovaný_deň": period_metrics.get("date_to")}
-        if period == "month":
+        if period in ("month", "prev_month"):
             return {
                 "obdobie_od": period_metrics.get("date_from"),
                 "obdobie_do": period_metrics.get("date_to"),

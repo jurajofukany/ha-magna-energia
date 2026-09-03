@@ -99,8 +99,30 @@ views:
                 name: Spolu
                 icon: mdi:sigma
               - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_podla_portalu_mesiac
-                name: Náklady podľa portálu
+                name: Náklady podľa portálu (silová)
                 icon: mdi:currency-eur
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_distribucia_mesiac
+                name: Distribúcia (dopočet)
+                icon: mdi:transmission-tower
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_spolu_s_distribuciou_mesiac
+                name: Náklady spolu
+                icon: mdi:cash-multiple
+
+          - type: entities
+            title: Minulý mesiac (uzavretý)
+            entities:
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_spolu_minuly_mesiac
+                name: Spolu
+                icon: mdi:sigma
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_podla_portalu_minuly_mesiac
+                name: Náklady podľa portálu (silová)
+                icon: mdi:currency-eur
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_distribucia_minuly_mesiac
+                name: Distribúcia (dopočet)
+                icon: mdi:transmission-tower
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_spolu_s_distribuciou_minuly_mesiac
+                name: Náklady spolu
+                icon: mdi:cash-multiple
 
           - type: statistics-graph
             title: Spotreba po dňoch (pásma 4T)
@@ -173,7 +195,10 @@ views:
                 icon: mdi:weather-sunny
               - type: divider
               - entity: sensor.magna_energia_prebytok_vyroby_spolu_mesiac
-                name: Spolu
+                name: Spolu (tento mesiac)
+                icon: mdi:sigma
+              - entity: sensor.magna_energia_prebytok_vyroby_spolu_minuly_mesiac
+                name: Spolu (minulý mesiac)
                 icon: mdi:sigma
 
           - type: statistics-graph

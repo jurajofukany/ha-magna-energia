@@ -40,6 +40,7 @@ from .const import (
     CHART_TYPE_STACKED,
     DEFAULT_SCAN_INTERVAL,
     DELIVERY_POINTS,
+    DISTRIBUTION_PRICE_EUR_KWH,
     DOMAIN,
     EP_LOAD,
     EP_LOGIN,
@@ -172,6 +173,19 @@ def compute_band_metrics(payload: dict, period_label_sk: str) -> dict[str, Any]:
         "total_kwh": summary.get(f"Celková spotreba za {period_label_sk}"),
         "total_eur": summary.get(f"Celkové náklady v 4T za {period_label_sk}"),
     }
+
+    # The portal's total_eur is commodity only. Add the distribution charge (flat per kWh) and
+    # a grand total, so the dashboard can show "náklady + distribúcia". Only ever surfaced as
+    # sensors for the "spotreba" point (DELIVERY_POINTS[...]['cost']); computed here for every
+    # point but harmless where total_eur is absent.
+    total_kwh = metrics["total_kwh"]
+    if isinstance(total_kwh, (int, float)):
+        distribution_eur = round(total_kwh * DISTRIBUTION_PRICE_EUR_KWH, 2)
+        metrics["distribution_eur"] = distribution_eur
+        total_eur = metrics["total_eur"]
+        if isinstance(total_eur, (int, float)):
+            metrics["total_with_distribution_eur"] = round(total_eur + distribution_eur, 2)
+
     for band_key, band_label in BAND_LABELS_SK.items():
         metrics[f"{band_key}_kwh"] = summary.get(band_label)
     return metrics
@@ -276,18 +290,25 @@ class MagnaCoordinator(DataUpdateCoordinator[dict[str, dict]]):
             # recent settled day actually is.
             for point_key in list(month_payloads):
                 try:
-                    month_payloads[point_key].append(
-                        await async_load(
-                            session,
-                            DELIVERY_POINTS[point_key]["eic_index"],
-                            INTERVAL_MONTH,
-                            GRANULARITY_DAY,
-                            CHART_TYPE_STACKED,
-                            prev_month_date,
-                        )
+                    prev_payload = await async_load(
+                        session,
+                        DELIVERY_POINTS[point_key]["eic_index"],
+                        INTERVAL_MONTH,
+                        GRANULARITY_DAY,
+                        CHART_TYPE_STACKED,
+                        prev_month_date,
                     )
                 except MagnaConnectionError as err:
                     _LOGGER.debug("Predošlý mesiac pre %s sa nenačítal: %s", point_key, err)
+                    continue
+                month_payloads[point_key].append(prev_payload)
+                # The previous calendar month is already closed, so unlike "month" (still
+                # month-to-date and still being settled) this is a stable figure worth a
+                # sensor of its own - including the portal's own last-month EUR cost.
+                if point_key in results:
+                    results[point_key]["prev_month"] = compute_band_metrics(
+                        prev_payload, "mesiac"
+                    )
 
             # "Posledný zúčtovaný deň": newest day with real data across spotreba+vyroba (the
             # points that see traffic every real day). Each point then reports that day's

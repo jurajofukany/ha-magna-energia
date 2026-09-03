@@ -42,6 +42,22 @@ CHART_TYPE_LINES = "lines"  # power-over-time view (what "KAPACITY" / rezervovan
 # packages/ems_savings_statistics.yaml), so we always ask for typ=0.
 TARIFF_TYPE_4T = "0"
 
+# iPortal's "Celkove naklady v 4T" figure is the commodity (silova elektrina) only - it never
+# includes distribution. Distribution is a flat per-kWh charge, identical across all 4 time
+# bands and for NT/VT alike, so it can be reconstructed from the plain "za mesiac" kWh total.
+#
+# Breakdown (EUR/kWh, without VAT; MAGNA ENERGIA 4T Univerzal invoice for 07/2026, recomputed
+# 2026-08-20 - same source as packages/ems_savings_statistics.yaml):
+#   distribucia bez strat 0.003962 + straty 0.007468 + systemove sluzby 0.010980
+#   + prevadzkovanie systemu 0.014071 + jadrovy fond 0.003270 = 0.039751
+# VAT 19 % is the reduced rate for household electricity per the invoice's accounting summary.
+# If the cennik changes, this is the one number to update.
+DISTRIBUTION_PRICE_EUR_KWH_NO_VAT = 0.039751
+ELECTRICITY_VAT_RATE = 1.19
+DISTRIBUTION_PRICE_EUR_KWH = round(
+    DISTRIBUTION_PRICE_EUR_KWH_NO_VAT * ELECTRICITY_VAT_RATE, 6
+)
+
 # Time-band series id -> our internal key. Verified directly from the portal's own JSON
 # (data.options.series_names) and from the legend markup (data-set attributes) on /spotreba:
 #   1 = "Rano / Vecer", 2 = "Dopoludnie", 3 = "Popoludnie", 4 = "Noc"

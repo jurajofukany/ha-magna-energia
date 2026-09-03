@@ -33,9 +33,18 @@ Pre každý z 3 odberných bodov (spotreba, prebytok výroby, požičovňa):
 - spotreba/výroba za **posledný zúčtovaný deň** a za **aktuálny mesiac**, spolu
   aj rozdelená do 4 pásiem (Noc, Ráno/Večer, Dopoludnie, Popoludnie) – okrem
   požičovne, tá má len súčty
+- **Spolu (minulý mesiac)** – uzavretý predošlý kalendárny mesiac; na rozdiel od
+  „(mesiac)" sa už nemení a portál ho má doúčtovaný
 - „Posledný zúčtovaný deň" (dátum)
 - špičkový výkon a čas jeho výskytu (okrem požičovne)
-- odhadované náklady v EUR podľa portálu za mesiac (len pre spotrebu)
+- **Náklady podľa portálu** za mesiac aj za minulý mesiac (len pre spotrebu) –
+  toto je iba **silová elektrina** (komodita), portál distribúciu neúčtuje
+- **Distribúcia** a **Náklady spolu s distribúciou** za mesiac aj za minulý
+  mesiac (len pre spotrebu) – distribúcia je dopočet: `spolu × sadzba`, kde sadzba
+  je plochá cena za kWh (rovnaká pre všetky pásma aj NT/VT) z faktúry MAGNA
+  ENERGIA 4T Univerzál. Sadzba je konštanta `DISTRIBUTION_PRICE_EUR_KWH` v
+  [`const.py`](custom_components/magna/const.py); pri zmene cenníka ju treba
+  prepísať tam.
 
 Senzory „(posledný deň)" neukazujú dnešok, ale **posledný deň, ktorý už portál
 zúčtoval** – ten sa určí ako najnovší deň s reálnymi dátami naprieč spotrebou a
