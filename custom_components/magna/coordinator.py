@@ -41,6 +41,8 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DELIVERY_POINTS,
     DISTRIBUTION_PRICE_EUR_KWH,
+    ELECTRICITY_VAT_RATE,
+    FIXED_FEES_EUR_MONTH,
     DOMAIN,
     EP_LOAD,
     EP_LOGIN,
@@ -174,17 +176,28 @@ def compute_band_metrics(payload: dict, period_label_sk: str) -> dict[str, Any]:
         "total_eur": summary.get(f"Celkové náklady v 4T za {period_label_sk}"),
     }
 
-    # The portal's total_eur is commodity only. Add the distribution charge (flat per kWh) and
-    # a grand total, so the dashboard can show "náklady + distribúcia". Only ever surfaced as
-    # sensors for the "spotreba" point (DELIVERY_POINTS[...]['cost']); computed here for every
-    # point but harmless where total_eur is absent.
+    # The portal's total_eur is commodity only AND WITHOUT VAT (checked against the invoices:
+    # portal 30.42 vs invoice commodity 30.56 EUR without VAT for 10/2026). Distribution is
+    # computed WITH VAT, so the commodity has to be brought to the same basis before summing -
+    # otherwise the grand total mixes VAT bases and comes out ~5 EUR/month too low.
+    # Only ever surfaced as sensors for the "spotreba" point (DELIVERY_POINTS[...]['cost']);
+    # computed here for every point but harmless where total_eur is absent.
     total_kwh = metrics["total_kwh"]
     if isinstance(total_kwh, (int, float)):
         distribution_eur = round(total_kwh * DISTRIBUTION_PRICE_EUR_KWH, 2)
         metrics["distribution_eur"] = distribution_eur
         total_eur = metrics["total_eur"]
         if isinstance(total_eur, (int, float)):
-            metrics["total_with_distribution_eur"] = round(total_eur + distribution_eur, 2)
+            commodity_with_vat = round(total_eur * ELECTRICITY_VAT_RATE, 2)
+            metrics["commodity_with_vat_eur"] = commodity_with_vat
+            total_with_distribution = round(commodity_with_vat + distribution_eur, 2)
+            metrics["total_with_distribution_eur"] = total_with_distribution
+            # Fixed monthly items exist only for a whole month, not for a single day.
+            if period_label_sk == "mesiac":
+                metrics["fixed_fees_eur"] = FIXED_FEES_EUR_MONTH
+                metrics["total_with_fixed_eur"] = round(
+                    total_with_distribution + FIXED_FEES_EUR_MONTH, 2
+                )
 
     for band_key, band_label in BAND_LABELS_SK.items():
         metrics[f"{band_key}_kwh"] = summary.get(band_label)

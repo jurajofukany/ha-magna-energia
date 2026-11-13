@@ -58,6 +58,26 @@ DISTRIBUTION_PRICE_EUR_KWH = round(
     DISTRIBUTION_PRICE_EUR_KWH_NO_VAT * ELECTRICITY_VAT_RATE, 6
 )
 
+# Fixed monthly items from the MAGNA ENERGIA invoices for 09/2026 and 10/2026 (EUR/month,
+# without VAT; identical on both). They do not depend on consumption and the portal never
+# reports them, so they are added to the month totals here. Billed for the whole month, so the
+# month-to-date figure already contains the full amount (the way the supplier invoices it).
+#   Mesacna sadzba za OM 1.50 + Cena za istic 25 A 9.405
+#   + Poplatok za prevzatie zodpovednosti za odchylku (10 kWp * 0.38 EUR/kWp) 3.80
+# If the cennik changes (or the breaker / installed kWp changes), update these.
+FIXED_FEE_SUPPLY_POINT_EUR_NO_VAT = 1.5
+FIXED_FEE_BREAKER_EUR_NO_VAT = 9.405
+FIXED_FEE_IMBALANCE_EUR_NO_VAT = 3.8
+FIXED_FEES_EUR_MONTH = round(
+    (
+        FIXED_FEE_SUPPLY_POINT_EUR_NO_VAT
+        + FIXED_FEE_BREAKER_EUR_NO_VAT
+        + FIXED_FEE_IMBALANCE_EUR_NO_VAT
+    )
+    * ELECTRICITY_VAT_RATE,
+    2,
+)
+
 # Time-band series id -> our internal key. Verified directly from the portal's own JSON
 # (data.options.series_names) and from the legend markup (data-set attributes) on /spotreba:
 #   1 = "Rano / Vecer", 2 = "Dopoludnie", 3 = "Popoludnie", 4 = "Noc"

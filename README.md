@@ -37,14 +37,23 @@ Pre každý z 3 odberných bodov (spotreba, prebytok výroby, požičovňa):
   „(mesiac)" sa už nemení a portál ho má doúčtovaný
 - „Posledný zúčtovaný deň" (dátum)
 - špičkový výkon a čas jeho výskytu (okrem požičovne)
-- **Náklady podľa portálu** za mesiac aj za minulý mesiac (len pre spotrebu) –
-  toto je iba **silová elektrina** (komodita), portál distribúciu neúčtuje
-- **Distribúcia** a **Náklady spolu s distribúciou** za mesiac aj za minulý
-  mesiac (len pre spotrebu) – distribúcia je dopočet: `spolu × sadzba`, kde sadzba
-  je plochá cena za kWh (rovnaká pre všetky pásma aj NT/VT) z faktúry MAGNA
-  ENERGIA 4T Univerzál. Sadzba je konštanta `DISTRIBUTION_PRICE_EUR_KWH` v
-  [`const.py`](custom_components/magna/const.py); pri zmene cenníka ju treba
-  prepísať tam.
+- **Náklady podľa portálu** za mesiac aj za minulý mesiac (len pre
+  spotrebu) – toto je iba **silová elektrina** (komodita) **bez DPH**, portál
+  distribúciu neúčtuje
+- **Distribúcia** a **Náklady spolu s distribúciou** (obe **s DPH**) za mesiac aj
+  za minulý mesiac (len pre spotrebu) – distribúcia je dopočet: `spolu × sadzba`,
+  kde sadzba je plochá cena za kWh (rovnaká pre všetky pásma aj NT/VT) z faktúry
+  MAGNA ENERGIA 4T Univerzál. „Náklady spolu" = portálová komodita × DPH +
+  distribúcia (do v0.6.0 sa sčítala komodita bez DPH s distribúciou s DPH, takže
+  súčet bol nižší o DPH z komodity). Sadzba je konštanta
+  `DISTRIBUTION_PRICE_EUR_KWH` v [`const.py`](custom_components/magna/const.py);
+  pri zmene cenníka ju treba prepísať tam.
+- **Fixné poplatky** a **Odber celkom s fixnými poplatkami** (obe **s DPH**) za
+  mesiac aj za minulý mesiac (len pre spotrebu) – mesačný poplatok za odberné
+  miesto, istič a zodpovednosť za odchýlku (`FIXED_FEES_EUR_MONTH` v `const.py`,
+  17,50 € s DPH). Účtujú sa za celý mesiac, takže bežiaci mesiac ich obsahuje
+  celé hneď od 1. dňa. „Odber celkom" je suma pred kreditom za vrátenú energiu
+  z požičovne.
 
 Senzory „(posledný deň)" neukazujú dnešok, ale **posledný deň, ktorý už portál
 zúčtoval** – ten sa určí ako najnovší deň s reálnymi dátami naprieč spotrebou a

@@ -105,8 +105,14 @@ views:
                 name: Distribúcia (dopočet)
                 icon: mdi:transmission-tower
               - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_spolu_s_distribuciou_mesiac
-                name: Náklady spolu
+                name: Náklady spolu (s DPH)
                 icon: mdi:cash-multiple
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_fixne_poplatky_mesiac
+                name: Fixné poplatky (s DPH)
+                icon: mdi:receipt-text-outline
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_odber_celkom_s_fixnymi_poplatkami_mesiac
+                name: Odber celkom s fixnými
+                icon: mdi:cash-register
 
           - type: entities
             title: Minulý mesiac (uzavretý)
@@ -121,8 +127,14 @@ views:
                 name: Distribúcia (dopočet)
                 icon: mdi:transmission-tower
               - entity: sensor.magna_energia_spotreba_odber_zo_siete_naklady_spolu_s_distribuciou_minuly_mesiac
-                name: Náklady spolu
+                name: Náklady spolu (s DPH)
                 icon: mdi:cash-multiple
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_fixne_poplatky_minuly_mesiac
+                name: Fixné poplatky (s DPH)
+                icon: mdi:receipt-text-outline
+              - entity: sensor.magna_energia_spotreba_odber_zo_siete_odber_celkom_s_fixnymi_poplatkami_minuly_mesiac
+                name: Odber celkom s fixnými
+                icon: mdi:cash-register
 
           - type: statistics-graph
             title: Spotreba po dňoch (pásma 4T)

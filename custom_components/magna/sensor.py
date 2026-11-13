@@ -105,6 +105,31 @@ def _band_and_total_descriptions(point_config: dict) -> list[MagnaSensorDescript
                     native_unit_of_measurement="EUR",
                 )
             )
+            # Fixné mesačné položky z faktúry (odberné miesto, istič, odchýlka) s DPH a celkový
+            # odber = silová + distribúcia + fixné, t. j. to, čo sa očakáva na faktúre (pred
+            # kreditom za vrátenú energiu z požičovne). Viď FIXED_FEES_EUR_MONTH.
+            descriptions.append(
+                MagnaSensorDescription(
+                    key=f"{period}_fixed_fees",
+                    translation_key=f"{period}_fixed_fees",
+                    name=f"Fixné poplatky ({period_label})",
+                    metrics_path=(period, "fixed_fees_eur"),
+                    device_class=SensorDeviceClass.MONETARY,
+                    state_class=SensorStateClass.TOTAL,
+                    native_unit_of_measurement="EUR",
+                )
+            )
+            descriptions.append(
+                MagnaSensorDescription(
+                    key=f"{period}_total_with_fixed",
+                    translation_key=f"{period}_total_with_fixed",
+                    name=f"Odber celkom s fixnými poplatkami ({period_label})",
+                    metrics_path=(period, "total_with_fixed_eur"),
+                    device_class=SensorDeviceClass.MONETARY,
+                    state_class=SensorStateClass.TOTAL,
+                    native_unit_of_measurement="EUR",
+                )
+            )
 
     # Predošlý (uzavretý) kalendárny mesiac. Bez state class - je to snímka, ktorá pri prelome
     # mesiaca zmení význam (rovnaký dôvod ako pri "posledný deň"); dlhodobú históriu drží
@@ -146,6 +171,26 @@ def _band_and_total_descriptions(point_config: dict) -> list[MagnaSensorDescript
                 translation_key="prev_month_total_cost",
                 name="Náklady spolu s distribúciou (minulý mesiac)",
                 metrics_path=("prev_month", "total_with_distribution_eur"),
+                device_class=SensorDeviceClass.MONETARY,
+                native_unit_of_measurement="EUR",
+            )
+        )
+        descriptions.append(
+            MagnaSensorDescription(
+                key="prev_month_fixed_fees",
+                translation_key="prev_month_fixed_fees",
+                name="Fixné poplatky (minulý mesiac)",
+                metrics_path=("prev_month", "fixed_fees_eur"),
+                device_class=SensorDeviceClass.MONETARY,
+                native_unit_of_measurement="EUR",
+            )
+        )
+        descriptions.append(
+            MagnaSensorDescription(
+                key="prev_month_total_with_fixed",
+                translation_key="prev_month_total_with_fixed",
+                name="Odber celkom s fixnými poplatkami (minulý mesiac)",
+                metrics_path=("prev_month", "total_with_fixed_eur"),
                 device_class=SensorDeviceClass.MONETARY,
                 native_unit_of_measurement="EUR",
             )
